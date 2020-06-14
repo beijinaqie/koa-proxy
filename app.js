@@ -10,6 +10,7 @@ const app = new Koa();
 // const db = require('./db/index.js');
 
 let baseUrl = 'http://192.168.1.56:10021';
+let baseUrl2 = 'http://192.168.1.27:9100'
 let baseUrlAdmin = 'http://192.168.1.56:10022'
 
 app.use(cors());
@@ -51,13 +52,19 @@ app.use( async ctx => {
 	let url = ''
 	let api = ''
 	
-	if (ctx.url.includes('admin')) {
-		api = ctx.url.replace('\/admin', '')
+	if (ctx.url.includes('/marketadmin/')) {
 		url = baseUrlAdmin
 	} else {
 		url = baseUrl
+	}
+	if (ctx.url.indexOf('/market/') === 0) {
+		api = ctx.url.slice(7)
+	} else if (ctx.url.indexOf('/marketadmin/') === 0) {
+		api = ctx.url.slice(12)
+	} else {
 		api = ctx.url
 	}
+	
 	if (ctx.method === 'GET') {
 		if (ctx.url.includes('/custom/v1.0.0/custom/self/token')) {
 			return ctx.body = {
@@ -70,6 +77,20 @@ app.use( async ctx => {
 				},
 				desp: 'success'
 			}
+		}
+		if (ctx.url.includes('/common/v1.0.0/area/')) {
+			const ret = await Axios.get(baseUrl2 + api, {
+				headers: {
+					'Content-type': ctx.request.header['content-type'] || 'application/json',
+					'Authorization': ctx.request.header.authorization || '',
+					'Token': ctx.request.header.token || ''
+				}
+			})
+			return ctx.body = {
+				status: '10000',
+				data: ret.data.data,
+				desp: 'success'
+			};
 		}
 		try{
 			const ret = await Axios.get(url + api, {
@@ -90,7 +111,7 @@ app.use( async ctx => {
 				status: '10000',
 				data: {
 					code: 200,
-					data: 'http://192.168.1.56:10021 postman试试？通了找我，不通找佳美',
+					data: e,
 					success: true,
 					msg: 'success'
 				},
@@ -105,6 +126,22 @@ app.use( async ctx => {
 				data: {
 					code: 200,
 					data: token,
+					success: true,
+					msg: 'success'
+				},
+				desp: 'success'
+			};
+		} else if (ctx.url.includes('/v1.0.0/market/file/uploadFile')) {
+			return ctx.body = {
+				status: '10000',
+				data: {
+					code: 200,
+					data: {
+						absoluteUrl: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
+						relativeUrl: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
+						fileSize: '10086',
+						fileName: '佳美'
+					},
 					success: true,
 					msg: 'success'
 				},
@@ -133,7 +170,7 @@ app.use( async ctx => {
 				status: '10000',
 				data: {
 					code: 200,
-					data: 'http://192.168.1.56:10021 postman试试？通了找我，不通找佳美',
+					data: e,
 					success: true,
 					msg: 'success'
 				},
@@ -162,7 +199,7 @@ app.use( async ctx => {
 				status: '10000',
 				data: {
 					code: 200,
-					data: 'http://192.168.1.56:10021 postman试试？通了找我，不通找佳美',
+					data: e,
 					success: true,
 					msg: 'success'
 				},
@@ -191,7 +228,7 @@ app.use( async ctx => {
 				status: '10000',
 				data: {
 					code: 200,
-					data: 'http://192.168.1.56:10021 postman试试？通了找我，不通找佳美',
+					data: e,
 					success: true,
 					msg: 'success'
 				},

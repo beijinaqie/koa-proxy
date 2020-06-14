@@ -10,6 +10,7 @@ const app = new Koa();
 // const db = require('./db/index.js');
 
 let baseUrl = 'http://130.233.24.219:8889';
+let baseUrl2 = 'http://192.168.1.56:10021';
 
 app.use(cors());
 app.use(logger('combined'));
@@ -25,7 +26,7 @@ const Axios = axios.create()
 
 // 添加请求拦截器
 Axios.interceptors.request.use(function (config) {
-	// console.log(config.headers)
+	// console.log(config.params)
     // 在发送请求之前做些什么
     return config;
   }, function (error) {
@@ -43,14 +44,12 @@ Axios.interceptors.response.use(function (response) {
   });
 
 app.use( async ctx => {
-	let url = ''
+	let url = ctx.url.includes('/market/') ? baseUrl2 : baseUrl
 	let api = ''
 	
-	if (ctx.url.includes('admin')) {
-		api = ctx.url.replace('\/admin', '')
-		url = baseUrlAdmin
+	if (ctx.url.indexOf('/edge/') === 0) {
+		api = ctx.url.slice(5)
 	} else {
-		url = baseUrl
 		api = ctx.url
 	}
 	if (ctx.method === 'GET') {
@@ -85,7 +84,7 @@ app.use( async ctx => {
 				status: '10000',
 				data: {
 					code: 200,
-					data: '你瞅啥?',
+					data: e,
 					success: true,
 					msg: 'success'
 				},
@@ -93,7 +92,7 @@ app.use( async ctx => {
 			};
 		}
 	} else if (ctx.method === 'POST') {
-		// console.log(ctx.request.header)
+		// console.log(ctx.request.body, ctx.request.files)
 		if (ctx.url.includes('/custom/v1.0.0/login')) {
 			return ctx.body = {
 				status: '10000',
@@ -108,10 +107,11 @@ app.use( async ctx => {
 		}
 		try{
 			const ret = await Axios.post(url + api, { 
-				...ctx.request.body
+				...ctx.request.body,
+				file: (ctx.request.files && ctx.request.files.file) || ''
 			}, {
 				headers: {
-					'Content-type': ctx.request.header['content-type'] || '',
+					'Content-type': ctx.request.header['content-type'] || 'application/json',
 					'Authorization': ctx.request.header.authorization || '',
 					'Token': ctx.request.header.token || ''
 				}
@@ -127,7 +127,7 @@ app.use( async ctx => {
 				status: '10000',
 				data: {
 					code: 200,
-					data: '你瞅啥?',
+					data: e,
 					success: true,
 					msg: 'success'
 				},
@@ -140,7 +140,7 @@ app.use( async ctx => {
 				...ctx.request.body
 			}, {
 				headers: {
-					'Content-type': ctx.request.header['content-type'],
+					'Content-type': ctx.request.header['content-type'] || 'application/json',
 					'Authorization': ctx.request.header.authorization || '',
 					'Token': ctx.request.header.token || ''
 				}
@@ -156,7 +156,7 @@ app.use( async ctx => {
 				status: '10000',
 				data: {
 					code: 200,
-					data: '你瞅啥?',
+					data: e,
 					success: true,
 					msg: 'success'
 				},
@@ -164,12 +164,12 @@ app.use( async ctx => {
 			};
 		}
 	} else if (ctx.method === 'DELETE') {
+		console.log(url + api)
 		try{
 			const ret = await Axios.delete(url + api, {
-				params: ctx.query,
 				...ctx.request.body,
 				headers: {
-					'Content-type': ctx.request.header['content-type'],
+					'Content-type': ctx.request.header['content-type'] || 'application/json',
 					'Authorization': ctx.request.header.authorization || '',
 					'Token': ctx.request.header.token || ''
 				}
@@ -185,7 +185,35 @@ app.use( async ctx => {
 				status: '10000',
 				data: {
 					code: 200,
-					data: '你瞅啥?',
+					data: e,
+					success: true,
+					msg: 'success'
+				},
+				desp: 'success'
+			};
+		}
+	} else if (ctx.method === 'PATCH') {
+		try{
+			const ret = await Axios.patch(url + api, ctx.request.body, {
+				params: ctx.query,
+				headers: {
+					'Content-type': ctx.request.header['content-type'] || 'application/json',
+					'Authorization': ctx.request.header.authorization || '',
+					'Token': ctx.request.header.token || ''
+				}
+			})
+			ctx.body = {
+				status: '10000',
+				data: ret.data,
+				desp: 'success'
+			};;
+		}catch(e){
+			console.log(e)
+			ctx.body = {
+				status: '10000',
+				data: {
+					code: 200,
+					data: e,
 					success: true,
 					msg: 'success'
 				},
