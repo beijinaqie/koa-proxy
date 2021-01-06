@@ -3,7 +3,7 @@
 		"start": "nodemon app.js --watch app.js"
 	},
 	"dependencies": {
-		"axios": "^0.19.2",
+		"axios": "^0.21.1",
 		"chalk": "^4.0.0",
 		"figlet": "^1.4.0",
 		"ip": "^1.1.5",
